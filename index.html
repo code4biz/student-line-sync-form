@@ -268,7 +268,7 @@
     // LIFF ID（LINE Developersコンソールで確認）
     const LIFF_ID = '2009042270-essqhSeZ';
     
-    // GAS Web APIのURL
+    // GAS Web APIのURL（デプロイ後に取得）
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbzvufdDNM6pmCB2Uiw38lrA4AvFSdJra1r5mgf9Zt5epCYR2SRIimVIsJFJJProb7U/exec';
 
     // =====================================================
@@ -346,8 +346,9 @@
         // GASにデータ送信
         const response = await fetch(GAS_API_URL, {
           method: 'POST',
+          mode: 'cors',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'text/plain',
           },
           body: JSON.stringify({
             userId: userProfile.userId,
