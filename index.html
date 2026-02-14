@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>受講生登録フォーム</title>
+  <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      font-size: 20px;
+      color: #333;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus {
+      outline: none;
+      border-color: #06c755;
+      box-shadow: 0 0 0 3px rgba(6, 199, 85, 0.1);
+    }
+
+    input[type="text"]:disabled,
+    input[type="email"]:disabled {
+      background-color: #f5f5f5;
+      color: #999;
+    }
+
+    .error-message {
+      color: #dc3545;
+      font-size: 14px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      background-color: #06c755;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .submit-btn:hover {
+      background-color: #05a847;
+    }
+
+    .submit-btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #06c755;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .success-container {
+      text-align: center;
+      display: none;
+    }
+
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      background-color: #06c755;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+    }
+
+    .success-icon::after {
+      content: '✓';
+      color: white;
+      font-size: 32px;
+    }
+
+    .success-title {
+      font-size: 20px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .success-message {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .error-container {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+
+    .error-container p {
+      color: #dc3545;
+      margin-bottom: 16px;
+    }
+
+    .line-info {
+      background-color: #f0f9f4;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .line-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+
+    .line-info-text {
+      font-size: 14px;
+    }
+
+    .line-info-label {
+      color: #666;
+      font-size: 12px;
+    }
+
+    .line-info-name {
+      color: #333;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- ローディング画面 -->
+    <div id="loading" class="loading">
+      <div class="loading-spinner"></div>
+      <p>読み込み中...</p>
+    </div>
+
+    <!-- フォーム画面 -->
+    <div id="form-container" style="display: none;">
+      <h1>受講生登録</h1>
+      <p class="subtitle">受講申し込み時の情報を入力してください</p>
+
+      <!-- LINE情報表示 -->
+      <div class="line-info">
+        <img id="profile-image" src="" alt="プロフィール画像">
+        <div class="line-info-text">
+          <div class="line-info-label">LINEアカウント</div>
+          <div class="line-info-name" id="display-name-show"></div>
+        </div>
+      </div>
+
+      <form id="registration-form">
+        <div class="form-group">
+          <label for="name">氏名</label>
+          <input type="text" id="name" name="name" placeholder="山田 太郎" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">メールアドレス（受講申し込み時のもの）</label>
+          <input type="email" id="email" name="email" placeholder="example@email.com" required>
+          <p id="error-message" class="error-message">受講申し込み時のメールアドレスと一致しません</p>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submit-btn">登録する</button>
+      </form>
+    </div>
+
+    <!-- 成功画面 -->
+    <div id="success-container" class="success-container">
+      <div class="success-icon"></div>
+      <h2 class="success-title">登録完了</h2>
+      <p class="success-message">受講生登録が完了しました。<br>ありがとうございます。</p>
+    </div>
+
+    <!-- エラー画面（LIFF初期化失敗時など） -->
+    <div id="error-container" class="error-container">
+      <p id="system-error-message">エラーが発生しました</p>
+      <button class="submit-btn" onclick="location.reload()">再読み込み</button>
+    </div>
+  </div>
+
+  <script>
+    // =====================================================
+    // 設定項目（ここを変更してください）
+    // =====================================================
+    
+    // LIFF ID（LINE Developersコンソールで確認）
+    const LIFF_ID = 'YOUR_LIFF_ID_HERE';
+    
+    // GAS Web APIのURL（デプロイ後に取得）
+    const GAS_API_URL = 'YOUR_GAS_WEB_APP_URL_HERE';
+
+    // =====================================================
+    // グローバル変数
+    // =====================================================
+    let userProfile = null;
+
+    // =====================================================
+    // 初期化処理
+    // =====================================================
+    async function initializeLiff() {
+      try {
+        await liff.init({ liffId: LIFF_ID });
+
+        // ログインチェック
+        if (!liff.isLoggedIn()) {
+          liff.login();
+          return;
+        }
+
+        // プロフィール取得
+        userProfile = await liff.getProfile();
+        
+        // 画面に表示
+        document.getElementById('display-name-show').textContent = userProfile.displayName;
+        document.getElementById('profile-image').src = userProfile.pictureUrl || 'https://via.placeholder.com/40';
+
+        // フォーム表示
+        showForm();
+
+      } catch (error) {
+        console.error('LIFF初期化エラー:', error);
+        showSystemError('LIFFの初期化に失敗しました。\n再度お試しください。');
+      }
+    }
+
+    // =====================================================
+    // 画面切り替え
+    // =====================================================
+    function showForm() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('form-container').style.display = 'block';
+    }
+
+    function showSuccess() {
+      document.getElementById('form-container').style.display = 'none';
+      document.getElementById('success-container').style.display = 'block';
+    }
+
+    function showSystemError(message) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('system-error-message').textContent = message;
+      document.getElementById('error-container').style.display = 'block';
+    }
+
+    // =====================================================
+    // フォーム送信処理
+    // =====================================================
+    document.getElementById('registration-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const submitBtn = document.getElementById('submit-btn');
+      const errorMessage = document.getElementById('error-message');
+      const nameInput = document.getElementById('name');
+      const emailInput = document.getElementById('email');
+
+      // エラーメッセージを非表示
+      errorMessage.classList.remove('show');
+
+      // ボタンを無効化
+      submitBtn.disabled = true;
+      submitBtn.textContent = '送信中...';
+
+      try {
+        // GASにデータ送信
+        const response = await fetch(GAS_API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: userProfile.userId,
+            displayName: userProfile.displayName,
+            name: nameInput.value.trim(),
+            email: emailInput.value.trim()
+          })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          // 成功
+          showSuccess();
+          
+          // 3秒後にLIFFを閉じる（任意）
+          setTimeout(() => {
+            if (liff.isInClient()) {
+              liff.closeWindow();
+            }
+          }, 3000);
+
+        } else {
+          // メールアドレス不一致エラー
+          errorMessage.classList.add('show');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '登録する';
+        }
+
+      } catch (error) {
+        console.error('送信エラー:', error);
+        showSystemError('通信エラーが発生しました。\n再度お試しください。');
+      }
+    });
+
+    // =====================================================
+    // 起動
+    // =====================================================
+    document.addEventListener('DOMContentLoaded', initializeLiff);
+  </script>
+</body>
+</html>
