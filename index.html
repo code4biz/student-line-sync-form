@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>受講生登録フォーム</title>
+  <title>AI Codingコース受講生登録</title>
   <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     * {
@@ -206,6 +206,23 @@
       color: #333;
       font-weight: 600;
     }
+
+    .other-course-link {
+      text-align: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+
+    .other-course-link a {
+      color: #06c755;
+      font-size: 14px;
+      text-decoration: none;
+    }
+
+    .other-course-link a:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
@@ -244,6 +261,11 @@
 
         <button type="submit" class="submit-btn" id="submit-btn">登録する</button>
       </form>
+
+      <!-- 他コース向けリンク -->
+      <div class="other-course-link">
+        <a href="#" id="other-course-btn">Python/GASコースの受講生はこちら</a>
+      </div>
     </div>
 
     <!-- 成功画面 -->
@@ -270,6 +292,9 @@
     
     // GAS Web APIのURL（デプロイ後に取得）
     const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbyh--W7YGBX4SSCCah-4JPLS9MziABVtNoIe_6hG31zPzYiaYGRkMXiyOdaeBKDJvDX/exec';
+
+    // LINE公式アカウントのURL
+    const LINE_OA_URL = 'https://line.me/R/oaMessage/@549ldkhg/';
 
     // =====================================================
     // グローバル変数
@@ -325,6 +350,20 @@
     }
 
     // =====================================================
+    // LINE公式アカウントのトークに遷移
+    // =====================================================
+    function goToLineTalk() {
+      if (liff.isInClient()) {
+        liff.openWindow({
+          url: LINE_OA_URL,
+          external: false
+        });
+      } else {
+        window.location.href = LINE_OA_URL;
+      }
+    }
+
+    // =====================================================
     // フォーム送信処理
     // =====================================================
     document.getElementById('registration-form').addEventListener('submit', async function(e) {
@@ -363,15 +402,8 @@
         if (result.success) {
           showSuccess();
           setTimeout(() => {
-            if (liff.isInClient()) {
-              // LINE公式アカウントのトーク画面に遷移
-              liff.openWindow({
-                url: 'https://line.me/R/oaMessage/@549ldkhg/',
-                external: false
-              });
-            }
-          }, 1500);
-
+            goToLineTalk();
+          }, 3000);
         } else {
           // メールアドレス不一致エラー
           errorMessage.classList.add('show');
@@ -383,6 +415,14 @@
         console.error('送信エラー:', error);
         showSystemError('通信エラーが発生しました。\n再度お試しください。');
       }
+    });
+
+    // =====================================================
+    // 他コースリンクのクリック処理
+    // =====================================================
+    document.getElementById('other-course-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+      goToLineTalk();
     });
 
     // =====================================================
